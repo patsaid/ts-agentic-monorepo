@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+      target: development
+    container_name: agentic-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/agentic-db
+      - FRONTEND_URL=http://localhost:5173
+    volumes:
+      - ./apps/backend:/app/apps/backend
+      - ./libs:/app/libs
+      - /app/apps/backend/node_modules
+      - /app/node_modules
+    depends_on:
+      - mongodb
+    command: npm run dev:backend
+    restart: unless-stopped
+    networks:
+      - agentic-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      target: development
+    container_name: agentic-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3000/api
+    volumes:
+      - ./apps/frontend:/app/apps/frontend
+      - ./libs:/app/libs
+      - /app/apps/frontend/node_modules
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev:frontend
+    restart: unless-stopped
+    networks:
+      - agentic-network
+
+  mongodb:
+    image: mongo:7
+    container_name: agentic-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=agentic-db
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - agentic-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  agentic-network:
+    driver: bridge
