@@ -25,15 +25,19 @@ export default function Login({ onLogin }: LoginProps) {
         user = await userApi.create({ email, password });
       }
       onLogin(user);
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'An error occurred');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string; error?: string } } };
+      setError(error.response?.data?.message || error.response?.data?.error || 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: 'var(--color-background)' }}>
+    <div
+      className="min-h-screen flex items-center justify-center p-6"
+      style={{ backgroundColor: 'var(--color-background)' }}
+    >
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/5 to-cyan-600/10"></div>
 
@@ -42,13 +46,21 @@ export default function Login({ onLogin }: LoginProps) {
         {/* Header */}
         <div className="text-center mb-8 slide-up">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl glass-effect mb-6">
-            <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <svg
+              className="w-8 h-8 text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gradient mb-2">
-            Agentic Orchestration
-          </h1>
+          <h1 className="text-3xl font-bold text-gradient mb-2">Agentic Orchestration</h1>
           <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
             {isLogin ? 'Welcome back to your AI assistant' : 'Create your account to get started'}
           </p>
@@ -59,7 +71,11 @@ export default function Login({ onLogin }: LoginProps) {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
                   Email Address
                 </label>
                 <input
@@ -70,7 +86,7 @@ export default function Login({ onLogin }: LoginProps) {
                   style={{
                     backgroundColor: 'var(--color-surface)',
                     borderColor: 'var(--color-border)',
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
                   }}
                   placeholder="Enter your email"
                   value={email}
@@ -79,7 +95,11 @@ export default function Login({ onLogin }: LoginProps) {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
                   Password
                 </label>
                 <input
@@ -90,7 +110,7 @@ export default function Login({ onLogin }: LoginProps) {
                   style={{
                     backgroundColor: 'var(--color-surface)',
                     borderColor: 'var(--color-border)',
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
                   }}
                   placeholder="Enter your password"
                   value={password}
@@ -112,14 +132,31 @@ export default function Login({ onLogin }: LoginProps) {
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Processing...
                 </div>
+              ) : isLogin ? (
+                'Sign In'
               ) : (
-                isLogin ? 'Sign In' : 'Create Account'
+                'Create Account'
               )}
             </button>
 
@@ -130,10 +167,8 @@ export default function Login({ onLogin }: LoginProps) {
                 style={{ color: 'var(--color-text-secondary)' }}
                 onClick={() => setIsLogin(!isLogin)}
               >
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
-                <span className="text-blue-400">
-                  {isLogin ? 'Sign up' : 'Sign in'}
-                </span>
+                {isLogin ? "Don't have an account? " : 'Already have an account? '}
+                <span className="text-blue-400">{isLogin ? 'Sign up' : 'Sign in'}</span>
               </button>
             </div>
           </form>

@@ -22,17 +22,18 @@ export class ConversationsService {
   }
 
   async findByUserId(userId: string): Promise<ConversationDocument[]> {
-    return this.conversationModel
-      .find({ user: userId })
-      .sort({ createdAt: -1 })
-      .exec();
+    return this.conversationModel.find({ user: userId }).sort({ createdAt: -1 }).exec();
   }
 
   async findById(id: string): Promise<ConversationDocument | null> {
     return this.conversationModel.findById(id).exec();
   }
 
-  async addMessage(conversationId: string, question: string, answer: string): Promise<ConversationDocument> {
+  async addMessage(
+    conversationId: string,
+    question: string,
+    answer: string,
+  ): Promise<ConversationDocument> {
     const conversation = await this.conversationModel.findById(conversationId);
 
     if (!conversation) {
@@ -49,7 +50,10 @@ export class ConversationsService {
     return conversation.save();
   }
 
-  async createOrFindConversation(userId: string, conversationId?: string): Promise<ConversationDocument> {
+  async createOrFindConversation(
+    userId: string,
+    conversationId?: string,
+  ): Promise<ConversationDocument> {
     if (conversationId) {
       const existing = await this.findById(conversationId);
       if (existing) {

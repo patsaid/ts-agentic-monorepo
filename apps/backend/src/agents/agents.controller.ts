@@ -44,11 +44,17 @@ export class AgentsController {
   async askAgent(@Body() agentAskDto: AgentAskDto) {
     const { question, userId, conversationId } = agentAskDto;
 
-    // Run the agent
-    const answer = await this.agentService.runAgent(question);
+    // Find or create conversation first to get history
+    const conversation = await this.conversationsService.createOrFindConversation(
+      userId,
+      conversationId,
+    );
 
-    // Find or create conversation
-    const conversation = await this.conversationsService.createOrFindConversation(userId, conversationId);
+    // Get conversation history for context
+    const conversationHistory = conversation.messages || [];
+
+    // Run the agent with conversation history
+    const answer = await this.agentService.runAgent(question, conversationHistory);
 
     // Add message to conversation
     await this.conversationsService.addMessage(conversation._id.toString(), question, answer);
@@ -88,10 +94,14 @@ export class AgentsController {
     const { userId } = weatherRequestDto;
     const question = `What is the weather in ${city}?`;
 
-    const answer = await this.agentService.runAgent(question);
-
-    // Find or create conversation
+    // Find or create conversation first to get history
     const conversation = await this.conversationsService.createOrFindConversation(userId);
+
+    // Get conversation history for context
+    const conversationHistory = conversation.messages || [];
+
+    // Run the agent with conversation history
+    const answer = await this.agentService.runAgent(question, conversationHistory);
 
     // Add message to conversation
     await this.conversationsService.addMessage(conversation._id.toString(), question, answer);
@@ -116,14 +126,21 @@ export class AgentsController {
       },
     },
   })
-  async getLocalInfo(@Param('name') name: string, @Body() localInfoRequestDto: LocalInfoRequestDto) {
+  async getLocalInfo(
+    @Param('name') name: string,
+    @Body() localInfoRequestDto: LocalInfoRequestDto,
+  ) {
     const { userId } = localInfoRequestDto;
     const question = `Fetch info for user ${name}`;
 
-    const answer = await this.agentService.runAgent(question);
-
-    // Find or create conversation
+    // Find or create conversation first to get history
     const conversation = await this.conversationsService.createOrFindConversation(userId);
+
+    // Get conversation history for context
+    const conversationHistory = conversation.messages || [];
+
+    // Run the agent with conversation history
+    const answer = await this.agentService.runAgent(question, conversationHistory);
 
     // Add message to conversation
     await this.conversationsService.addMessage(conversation._id.toString(), question, answer);

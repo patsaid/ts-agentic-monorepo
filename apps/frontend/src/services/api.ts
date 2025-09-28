@@ -55,30 +55,30 @@ export interface Conversation {
 // API functions
 export const userApi = {
   create: (data: CreateUserRequest): Promise<User> =>
-    api.post('/users', data).then(res => res.data),
+    api.post('/users', data).then((res) => res.data),
 
   login: (data: LoginRequest): Promise<User> =>
-    api.post('/users/login', data).then(res => res.data),
+    api.post('/users/login', data).then((res) => res.data),
 };
 
 export const agentApi = {
   ask: (data: AgentAskRequest): Promise<AgentResponse> =>
-    api.post('/agent/ask', data).then(res => res.data),
+    api.post('/agent/ask', data).then((res) => res.data),
 
   getWeather: (city: string, userId: string): Promise<AgentResponse> =>
-    api.post(`/agent/weather/${city}`, { userId }).then(res => res.data),
+    api.post(`/agent/weather/${city}`, { userId }).then((res) => res.data),
 
   getLocalInfo: (name: string, userId: string): Promise<AgentResponse> =>
-    api.post(`/agent/local/${name}`, { userId }).then(res => res.data),
+    api.post(`/agent/local/${name}`, { userId }).then((res) => res.data),
 
   getConversations: (userId: string): Promise<Conversation[]> =>
-    api.get(`/agent/conversations/${userId}`).then(res => res.data),
+    api.get(`/agent/conversations/${userId}`).then((res) => res.data),
 };
 
 export const conversationApi = {
   create: (userId: string): Promise<{ conversationId: string }> =>
-    api.post('/agent/conversations/new', { userId }).then(res => res.data),
+    api.post('/agent/conversations/new', { userId }).then((res) => res.data),
 
   getByUserId: (userId: string): Promise<Conversation[]> =>
-    api.get(`/conversations/user/${userId}`).then(res => res.data),
+    api.get(`/conversations/user/${userId}`).then((res) => res.data),
 };

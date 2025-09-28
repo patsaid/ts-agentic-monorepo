@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { UserInfoService } from './user-info/services/user-info.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -56,6 +57,15 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+
+  // Seed user info database
+  try {
+    const userInfoService = app.get(UserInfoService);
+    await userInfoService.seedUsers();
+    logger.log('✅ User info database seeded successfully');
+  } catch (error) {
+    logger.error('❌ Failed to seed user info database:', error);
+  }
 
   const port = configService.get('PORT', 3000);
   await app.listen(port);

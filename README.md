@@ -71,6 +71,7 @@ ts-agentic-monorepo/
 3. **Run with Docker (Recommended)**
 
    ```bash
+   # Make sure your .env file contains OPENAI_API_KEY
    npm run docker:up
    ```
 

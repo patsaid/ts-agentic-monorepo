@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Agent, run, tool } from '@openai/agents';
 import { ChatOpenAI } from '@langchain/openai';
 import { z } from 'zod';
+import { UserInfoService } from '../../user-info/services/user-info.service';
 
 @Injectable()
 export class AgentService {
@@ -10,7 +11,10 @@ export class AgentService {
   private agent: Agent;
   private chatModel: ChatOpenAI;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private userInfoService: UserInfoService,
+  ) {
     this.initializeAgent();
   }
 
@@ -49,22 +53,50 @@ export class AgentService {
       // Create local database tool
       const getLocalInfoTool = tool({
         name: 'get_local_info',
-        description: 'Get information about a user from the local database',
+        description: 'Get comprehensive information about a user from the local database including personal details, hobbies, life events, and more',
         parameters: z.object({ name: z.string() }),
         execute: async (input) => {
-          // Simulate database lookup
-          const users = [
-            { name: 'Alice', age: 30, location: 'New York', occupation: 'Engineer' },
-            { name: 'Bob', age: 25, location: 'San Francisco', occupation: 'Designer' },
-            { name: 'Charlie', age: 35, location: 'London', occupation: 'Product Manager' },
-          ];
+          try {
+            const user = await this.userInfoService.findByName(input.name);
 
-          const user = users.find(u => u.name.toLowerCase() === input.name.toLowerCase());
+            if (user) {
+              // Format life events for better readability
+              const lifeEventsText = user.lifeEvents.length > 0
+                ? user.lifeEvents
+                    .map((event) => `${event.date}: ${event.event}${event.description ? ` - ${event.description}` : ''}`)
+                    .join('\n  ')
+                : 'No life events recorded';
 
-          if (user) {
-            return `Found user ${user.name}: ${user.age} years old, located in ${user.location}, works as a ${user.occupation}.`;
-          } else {
-            return `No user found with the name "${input.name}" in the local database. Available users: ${users.map(u => u.name).join(', ')}.`;
+              const hobbiesText = user.hobbies.length > 0 ? user.hobbies.join(', ') : 'No hobbies recorded';
+
+              return `Found user ${user.name}:
+📍 Personal Details:
+  - Age: ${user.age} years old
+  - Current Location: ${user.location}
+  - Place of Birth: ${user.placeOfBirth}
+  - Occupation: ${user.occupation}
+  - Education: ${user.education || 'Not specified'}
+  - Marital Status: ${user.maritalStatus || 'Not specified'}
+
+🎯 Hobbies: ${hobbiesText}
+
+📅 Life Events:
+  ${lifeEventsText}
+
+📞 Contact:
+  - Email: ${user.email || 'Not provided'}
+  - Phone: ${user.phoneNumber || 'Not provided'}
+
+💭 Bio: ${user.bio || 'No bio available'}`;
+            } else {
+              // Get list of available users
+              const allUsers = await this.userInfoService.findAll();
+              const availableNames = allUsers.map((u) => u.name).join(', ');
+              return `No user found with the name "${input.name}" in the local database. Available users: ${availableNames || 'None'}.`;
+            }
+          } catch (error) {
+            this.logger.error('Error in getLocalInfoTool:', error);
+            return `Sorry, I encountered an error while looking up information for "${input.name}". Please try again later.`;
           }
         },
       });
@@ -89,14 +121,38 @@ export class AgentService {
     }
   }
 
-  async runAgent(question: string): Promise<string> {
+  async runAgent(
+    question: string,
+    conversationHistory?: Array<{ question: string; answer: string }>,
+  ): Promise<string> {
     try {
       if (!this.agent) {
         return 'Agent not available. Please check your OpenAI API key configuration.';
       }
 
-      this.logger.log(`Processing question: "${question}"`);
-      const result = await run(this.agent, question);
+      // Build context with conversation history
+      let contextualQuestion = question;
+      if (conversationHistory && conversationHistory.length > 0) {
+        const historyContext = conversationHistory
+          .map(
+            (msg, index) =>
+              `Previous conversation ${index + 1}:\nUser: ${msg.question}\nAssistant: ${msg.answer}`,
+          )
+          .join('\n\n');
+
+        contextualQuestion = `Here is our conversation history for context:
+
+${historyContext}
+
+Current question: ${question}
+
+Please respond to the current question while being aware of our conversation history.`;
+      }
+
+      this.logger.log(
+        `Processing question with ${conversationHistory?.length || 0} previous messages: "${question}"`,
+      );
+      const result = await run(this.agent, contextualQuestion);
       this.logger.log(`Agent response generated successfully`);
 
       return result.finalOutput;
