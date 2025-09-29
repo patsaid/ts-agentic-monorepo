@@ -79,7 +79,7 @@ While AI handles implementation, these human skills become more valuable:
 
 **For teams:**
 - Invest in AI tooling and training now
-- Establish quality gates that work with AI-generated code
+- Establish quality gates that work with AI-generated code (this one is big thing)
 - Rethink hiring criteria to emphasize problem-solving over implementation knowledge
 
 **For organizations:**
