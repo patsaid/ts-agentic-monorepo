@@ -126,15 +126,14 @@ npm run docker:down      # Stop all services
 
 ```
 apps/backend/src/
-├── auth/                # Authentication module
+├── auth/                # Authentication module (stub — no guards yet)
 ├── users/               # User management
+├── user-info/           # User info lookups
 ├── agents/              # AI agent management
 ├── conversations/       # Conversation handling
 ├── common/              # Shared utilities
 │   ├── filters/         # Exception filters
-│   ├── interceptors/    # Request interceptors
-│   ├── guards/          # Auth guards
-│   └── pipes/           # Validation pipes
+│   └── interceptors/    # Request interceptors
 ├── config/              # Configuration
 └── database/            # Database setup
 ```
